@@ -1,0 +1,257 @@
+@import '../../assets/styles/variables';
+
+%buttonMargin {
+  margin: 0 5px 0 0;
+}
+
+.isoBoxWrapper {
+  .filter-file {
+    @include responsive(on-mobile) {
+      margin-top: 10px;
+    }
+  }
+
+  .ant-row {
+    @include responsive(on-mobile) {
+      display: inline-block;
+      width: 100%;
+    }
+  }
+
+  .filter-file {
+    button {
+      @extend %buttonMargin;
+      padding: 0 8px;
+    }
+
+    .settings-button {
+      &.ant-btn {
+        float: right;
+        margin-right: 0;
+        position: absolute;
+        right: 0;
+        top: -30px;
+
+        @include responsive(on-mobile) {
+          float: none;
+          width: 100%;
+          margin: 0;
+          position: relative;
+          top: -10px;
+        }
+      }
+    }
+  }
+
+  @include responsive(up-mobile) {
+    .collapse-filter {
+      .ant-collapse-header {
+        display: none !important;
+      }
+
+      .ant-collapse-item {
+        border: none;
+      }
+
+      .ant-collapse-content {
+        float: left;
+        width: 100%;
+      }
+
+      .ant-collapse-content-box {
+        padding: 0;
+      }
+    }
+  }
+
+  @include responsive(on-mobile) {
+    .collapse-filter {
+      .ant-collapse-header {
+        padding: 15px !important;
+        border-bottom: 1px solid #d9d9d9;
+
+        .ant-collapse-arrow {
+          left: 0 !important;
+        }
+      }
+
+      .ant-collapse-content-box {
+        padding: 0;
+      }
+
+      .ant-collapse-item {
+        border: none;
+      }
+
+    }
+  }
+
+
+  button.filter-clear-button {
+    right: 0;
+    padding: 0;
+    height: 30px;
+    border: none;
+    margin-top: 3px;
+    position: absolute;
+    margin-right: 0;
+    background-color: transparent;
+
+    @include responsive(on-mobile) {
+      top: 13px;
+      width: auto !important;
+    }
+  }
+
+  .filter-options-area {
+    display: flex;
+    padding-left: 8px !important;
+
+    button {
+      @extend %buttonMargin;
+
+      &.ant-btn.checked {
+        border-color: #4482FF;
+        color: #4482FF;
+      }
+
+      &.ant-btn {
+        &.checked:focus {
+          border-color: #4482FF;
+          color: #4482FF;
+        }
+
+        &:focus {
+          color: #595959;
+          border-color: #e9e9e9;
+        }
+      }
+    }
+
+    .ant-select {
+      flex: auto;
+    }
+
+    @include responsive(on-mobile) {
+      display: inline-block;
+      padding-left: 0 !important;
+
+      .ant-select {
+        margin: 10px 0 0 0;
+      }
+      button {
+        margin: 0 3px;
+        padding: 0 10px;
+        width: calc(100% / 3 - 4px);
+
+        &:nth-child(2) {
+          margin: 0;
+        }
+
+        i {
+          margin: auto;
+        }
+      }
+    }
+  }
+
+  .filter-wrapper {
+    &:not(:nth-child(2)) {
+      padding: 20px 0 0 0;
+
+      @include responsive(on-mobile) {
+        width: 100%;
+        padding: 10px 0 0 0;
+      }
+    }
+
+    .ant-upload-list {
+      display: none;
+    }
+
+    .active-filters{
+      position: relative;
+      display: flex;
+      flex: auto;
+    }
+  }
+
+  .ant-row {
+    .filter-input {
+      @include responsive(on-mobile) {
+        margin: 0;
+        &:not(:nth-child(3n+1)) {
+          margin: 0;
+
+        }
+      }
+
+      .ant-form-item {
+        margin-bottom: 0px;
+        @include responsive(on-mobile) {
+          margin-bottom: 5px;
+        }
+      }
+
+      .ant-form-item-label {
+        line-height: 30px;
+      }
+    }
+
+    textarea.ant-input {
+      height: 35px;
+    }
+  }
+
+  .ant-select-selection--multiple .ant-select-selection__choice__remove > * {
+    line-height: 1;
+    background: #4482FF;
+    border-radius: 100%;
+    color: #F3F3F3;
+    padding: 1px 1px 0px 1px;
+    position: relative;
+    top: -2px;
+  }
+}
+
+.filter-modal {
+  width: 60% !important;
+  @include responsive(on-mobile) {
+    width: auto !important;
+  }
+
+  .ant-form-item-control {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .ant-form-item {
+    margin-bottom: 5px;
+    @include responsive(on-mobile) {
+      margin-bottom: 0;
+    }
+  }
+}
+
+.button-area {
+  @include responsive(on-mobile) {
+    button {
+      width: 100%;
+    }
+    .ant-upload-select {
+      width: 100%;
+    }
+  }
+}
+
+.ant-modal-body {
+  display: inline-block;
+  width: 100%;
+  max-height: 80vh;
+  overflow: hidden;
+
+  @include responsive(on-tablet) {
+    overflow: scroll;
+  }
+}

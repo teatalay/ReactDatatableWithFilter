@@ -1,0 +1,58 @@
+$primary-color: #282c34;
+$secondary-color: #61dafb;
+
+$on-xsmall: 370px;
+$up-xsmall: 370px;
+$on-small: 575px;
+$up-small: 576px;
+$on-mobile: 767px;
+$up-mobile: 768px;
+$on-tablet: 991px;
+$up-tablet: 992px;
+$on-desktop: 1199px;
+$up-desktop: 1200px;
+
+// usage -> @include responsive(on-mobile) {}
+@mixin responsive($media) {
+  @if $media == on-xsmall {
+    @media only screen and (max-width: $on-xsmall) {
+      @content;
+    }
+  } @else if $media == up-xsmall {
+    @media only screen and (min-width: $up-xsmall ) {
+      @content;
+    }
+  } @else if $media == on-small {
+    @media only screen and (max-width: $on-small ) {
+      @content;
+    }
+  } @else if $media == up-small {
+    @media only screen and (min-width: $up-small ) {
+      @content;
+    }
+  } @else if $media == on-mobile {
+    @media only screen and (max-width: $on-mobile ) {
+      @content;
+    }
+  } @else if $media == up-mobile {
+    @media only screen and (min-width: $up-mobile ) {
+      @content;
+    }
+  } @else if $media == on-tablet {
+    @media only screen and (max-width: $on-tablet ) {
+      @content;
+    }
+  } @else if $media == up-tablet {
+    @media only screen and (min-width: $up-tablet ) {
+      @content;
+    }
+  } @else if $media == on-desktop {
+    @media only screen and (max-width: $on-desktop ) {
+      @content;
+    }
+  } @else if $media == up-desktop {
+    @media only screen and (min-width: $up-desktop) {
+      @content;
+    }
+  }
+}

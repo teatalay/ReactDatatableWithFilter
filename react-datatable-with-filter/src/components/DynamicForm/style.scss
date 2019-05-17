@@ -1,0 +1,12 @@
+.field-info{
+  color: #808080;
+  font-style: italic;
+  font-size: 12px;
+  position: relative;
+  top: -10px;
+}
+.ant-modal-body{
+  .field-info{
+    display: none;
+  }
+}

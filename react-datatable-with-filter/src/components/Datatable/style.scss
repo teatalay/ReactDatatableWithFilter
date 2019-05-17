@@ -1,0 +1,83 @@
+@import '../../assets/styles/variables';
+
+.isoBoxWrapper {
+
+  .table-operations , .table-operations-default {
+    z-index: 1;
+    margin: 16px 0;
+    position: absolute;
+
+    button {
+      margin-left: 5px;
+    }
+
+    &:last-child {
+      margin-top: -50px;
+    }
+
+    .ant-select {
+      min-width: 200px;
+    }
+
+    @include responsive(on-tablet) {
+      margin: 0 0;
+      position: relative;
+      &:last-child {
+        margin-top: 0;
+      }
+    }
+
+    @include responsive(on-mobile){
+      display: flex;
+      .ant-select {
+        width: 100%;
+        min-width: auto;
+      }
+    }
+  }
+
+  .table-operations-default{
+    position: relative;
+    &:last-child {
+      margin-top: 20px;
+    }
+  }
+
+  .ant-table-pagination {
+    &.ant-pagination {
+      @include responsive(on-tablet) {
+        float: left;
+        .ant-pagination-total-text {
+          height: auto;
+          display: block;
+        }
+      }
+      @include responsive(on-mobile) {
+        .ant-pagination-prev, .ant-pagination-jump-prev, .ant-pagination-jump-next {
+          margin: 0 4px 0 0;
+        }
+        .ant-pagination-item{
+          margin: 0 5px 0 0;
+          a{
+            margin: auto;
+          }
+        }
+        .ant-pagination-jump-prev , .ant-pagination-jump-next{
+          margin: 0 5px 0 0;
+        }
+        .ant-pagination-total-text {
+          height: auto;
+          display: block;
+        }
+      }
+    }
+  }
+}
+
+tr.drop-over-downward td {
+  border-bottom: 2px dashed #1890ff;
+}
+
+tr.drop-over-upward td {
+  border-top: 2px dashed #1890ff;
+}
