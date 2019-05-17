@@ -311,7 +311,7 @@ function App() {
             //draggable: true,
             columns: columns,
             rowKey: "id",
-            //url: getProductsURL, give a source url that can be filtered by service via filter keys.
+            //url: getProductsURL, give a source url that can be paginated and filtered by service via filter keys.
             rowSelection: rowSelection,
             onChangeDataSource: onChangeDataSource,
             actionButtons: actionButtons,
