@@ -10,7 +10,10 @@ import { httpMethods } from "../../constants/commonTypes";
 import { getObjectFromString } from "../../utils";
 
 class DatatableWithFilter extends Component {
-  state = {};
+  state = {
+    activeColumnFilters: [],
+    columns: []
+  };
 
   componentDidMount() {
     const {
@@ -40,20 +43,37 @@ class DatatableWithFilter extends Component {
     this.setState({ filterObject, formFilters });
   };
 
+  onChangeActiveFilters = (filters = []) => {
+    this.setState({
+      activeColumnFilters: filters.filter(filter => filter.columnProps)
+    });
+  };
+
+  getColumns = () => {
+    let { datatableProps = {} } = this.props;
+    const { columns: columnsFromState, activeColumnFilters } = this.state;
+    const columns = datatableProps.columns || columnsFromState;
+    return [
+      ...columns,
+      ...activeColumnFilters.map(filter => ({ ...filter.columnProps }))
+    ];
+  };
+
   render() {
-    const { filterObject, formFilters, filterInputs, columns } = this.state;
+    const { filterObject, formFilters, filterInputs } = this.state;
     const { datatableProps = {}, filterProps } = this.props;
     const ftProps = {
       ...filterProps,
       ...(filterInputs ? { filterInputs } : {})
     };
-    const dtProps = { ...datatableProps, ...(columns ? { columns } : {}) };
+    const dtProps = { ...datatableProps, columns: this.getColumns() };
     return (
       <>
         <Box title="Filtreler">
           <Filter
             onSubmit={this.filterTable}
             onChange={this.onChangeFilter}
+            onChangeActiveFilters={this.onChangeActiveFilters}
             inline
             {...ftProps}
           />
@@ -86,7 +106,8 @@ DatatableWithFilter.propTypes = {
     preKey: PropTypes.string,
     posKey: PropTypes.string,
     collapsible: PropTypes.bool,
-    filterViaFile: PropTypes.bool
+    filterViaFile: PropTypes.bool,
+    onChangeActiveFilters: PropTypes.func
   }),
   datatableProps: PropTypes.shape({
     pagination: PropTypes.oneOfType([PropTypes.object, PropTypes.bool]),

@@ -1,10 +1,11 @@
 import React, { PureComponent } from "react";
-import { Icon, Popconfirm, Table, Select, Button } from "antd";
+import { Icon, Popconfirm, Select, Button } from "antd";
 import PropTypes from "prop-types";
 import HTML5Backend from "react-dnd-html5-backend";
 import { DragDropContext } from "react-dnd";
 import update from "immutability-helper";
 
+import Table from "./antTable.style";
 import Block from "../Block";
 import Span from "../Span";
 import Anchor from "../Anchor";
@@ -14,7 +15,7 @@ import { DragableBodyRow, EditableDragableFormRow } from "./draggable";
 import Modal from "../Feedback/modal";
 
 import { sendRequest } from "../../common/network";
-import { httpMethods } from "../../constants/commonTypes";
+import { httpMethods, responseTypes } from "../../constants/commonTypes";
 import getRenderer from "./renderers";
 import formatData from "./formatters";
 
@@ -52,12 +53,7 @@ class Datatable extends PureComponent {
       verticalScroll,
       verticalScrollSize,
       locale: localeProps = {},
-      dataSource,
-      draggable,
-      columns,
-      effaceable,
-      saveable,
-      rowKey
+      dataSource
     } = props;
     this.state = {
       selectedRowKeys: [],
@@ -97,69 +93,6 @@ class Datatable extends PureComponent {
               : null
           }
         : undefined;
-
-    this.columns = [
-      ...columns.map(column => ({ ...defaultColumnProps, ...column }))
-    ];
-    if (draggable) this.columns.unshift(draggableColumn);
-    if (effaceable)
-      this.columns.push({
-        title: "Delete",
-        dataIndex: "effaceable",
-        systemProp: true,
-        render: (text, record) =>
-          this.state.dataSource.length >= 1 ? (
-            <Popconfirm
-              title="Sure to delete?"
-              onConfirm={() => this.handleDelete(record[rowKey])}
-            >
-              <Anchor>Delete</Anchor>
-            </Popconfirm>
-          ) : null
-      });
-
-    if (saveable)
-      this.columns.push({
-        title: "Save",
-        dataIndex: "saveable",
-        render: (text, record) => {
-          const { editingKey } = this.state;
-          const editable = this.isEditing(record);
-          return (
-            <Block>
-              {editable ? (
-                <Span>
-                  <EditableContext.Consumer>
-                    {form => (
-                      <Anchor
-                        onClick={() =>
-                          this.handleSaveRow(form, record[props.rowKey])
-                        }
-                        style={{ marginRight: 8 }}
-                      >
-                        Save
-                      </Anchor>
-                    )}
-                  </EditableContext.Consumer>
-                  <Popconfirm
-                    title="Sure to cancel?"
-                    onConfirm={() => this.cancel(record[props.rowKey])}
-                  >
-                    <Anchor>Cancel</Anchor>
-                  </Popconfirm>
-                </Span>
-              ) : (
-                <Anchor
-                  disabled={editingKey !== ""}
-                  onClick={() => this.edit(record[props.rowKey])}
-                >
-                  Edit
-                </Anchor>
-              )}
-            </Block>
-          );
-        }
-      });
   }
 
   handleDelete = key => {
@@ -170,7 +103,7 @@ class Datatable extends PureComponent {
         dataSource: dataSource.filter(item => item[rowKey] !== key)
       },
       () => {
-        onChangeDataSource(this.state.dataSource);
+        if (onChangeDataSource) onChangeDataSource(this.state.dataSource);
       }
     );
   };
@@ -301,11 +234,14 @@ class Datatable extends PureComponent {
     if (!remote && !shallowEqual(dataSource, nextProps.dataSource))
       this.setState(prevState => ({
         dataSource: nextProps.dataSource,
-        pagination: {
-          ...prevState.pagination,
-          total: dataSource ? dataSource.length : 0,
-          current: 1
-        }
+        pagination:
+          prevState.pagination === false
+            ? false
+            : {
+                ...prevState.pagination,
+                total: dataSource ? dataSource.length : 0,
+                current: 1
+              }
       }));
   }
 
@@ -324,7 +260,13 @@ class Datatable extends PureComponent {
     filter,
     formFilters
   } = {}) => {
-    const { url, onChangeTotalCount, remote, sourceKey } = this.props;
+    const {
+      url,
+      onChangeTotalCount,
+      remote,
+      sourceKey,
+      onGetResponse
+    } = this.props;
     const { pagination } = this.state;
     const pageSize = pagination === false ? null : pagination.pageSize,
       pageOrder = pagination === false ? null : page;
@@ -347,7 +289,8 @@ class Datatable extends PureComponent {
       method: hasFormData ? httpMethods.POST : httpMethods.GET,
       headers: hasFormData ? { "Override-Method": "GET" } : {},
       onSuccess: result => {
-        onChangeTotalCount(result.count);
+        if (onChangeTotalCount) onChangeTotalCount(result.count);
+        if (onGetResponse) onGetResponse(responseTypes.success, result);
         this.setState(prevState => ({
           dataSource: getObjectFromString(sourceKey, result),
           next: result.next,
@@ -362,7 +305,8 @@ class Datatable extends PureComponent {
                 }
         }));
       },
-      onFail: () => {
+      onFail: error => {
+        if (onGetResponse) onGetResponse(responseTypes.fail, error);
         this.setState({
           dataSource: [],
           loading: false
@@ -404,7 +348,13 @@ class Datatable extends PureComponent {
     const currentAction = actionButtons.find(
       button => button.id === currentActionID
     );
-    if (!selectedRowKeys || !selectedRowKeys.length) return;
+    if (
+      !currentAction ||
+      (currentAction.selectionRequired
+        ? !selectedRowKeys || !selectedRowKeys.length
+        : false)
+    )
+      return;
     const resultAction = currentAction.reloadData ? this.fetchData : null;
 
     const formatValue =
@@ -436,7 +386,10 @@ class Datatable extends PureComponent {
             currentAction.params[currentAction.iteratorParam] = iterator;
           }
           sendRequest({
-            url: currentAction.url.replace("{0}", iterator),
+            url:
+              httpMethods[currentAction.httpType] === httpMethods.GET
+                ? currentAction.url.replace("{0}", iterator)
+                : currentAction.url,
             method: httpMethods[currentAction.httpType],
             params: currentAction.params && currentAction.params,
             onSuccess: result => {
@@ -456,12 +409,24 @@ class Datatable extends PureComponent {
         }
       } else {
         sendRequest({
-          url: currentAction.url.replace("{0}", formatValue),
+          url:
+            httpMethods[currentAction.httpType] === httpMethods.GET
+              ? currentAction.url.replace("{0}", formatValue)
+              : currentAction.url,
           method: httpMethods[currentAction.httpType],
-          params: currentAction.params && currentAction.params,
+          params:
+            httpMethods[currentAction.httpType] === httpMethods.GET
+              ? currentAction.params
+              : {
+                  ...currentAction.params,
+                  [currentAction.bodyKey]: selectedRowKeys
+                },
           onSuccess: result => {
             if (currentAction.onSuccess) currentAction.onSuccess(result);
             if (resultAction) resultAction();
+          },
+          onFail: () => {
+            if (currentAction.onFail) currentAction.onFail();
           }
         });
       }
@@ -469,8 +434,15 @@ class Datatable extends PureComponent {
   };
 
   actionElements = order => {
-    const { currentAction, selectedRowKeys, pagination } = this.state;
+    const {
+      currentAction: currentActionID,
+      selectedRowKeys,
+      pagination
+    } = this.state;
     const { actionButtons, actionButtonText } = this.props;
+    const currentAction = actionButtons.find(
+      button => button.id === currentActionID
+    );
     if (!actionButtons || !actionButtons.length) return null;
     const options = actionButtons.map((button, index) => (
       <Option
@@ -496,7 +468,10 @@ class Datatable extends PureComponent {
         </Select>
         <Button
           disabled={
-            !currentAction || !selectedRowKeys || !selectedRowKeys.length
+            !currentAction ||
+            (currentAction.selectionRequired
+              ? !selectedRowKeys || !selectedRowKeys.length
+              : false)
           }
           onClick={this.onDatatableAction}
           className="btn btn-primary"
@@ -534,12 +509,77 @@ class Datatable extends PureComponent {
       }),
       () => {
         const { onDrag } = this.props;
-        if (onDrag) onDrag(dragIndex, hoverIndex);
+        if (onDrag)
+          onDrag(
+            { ...dataSource[dragIndex], index: dragIndex },
+            { ...dataSource[hoverIndex], index: hoverIndex }
+          );
       }
     );
   };
 
   getColumns = () => {
+    const { draggable, columns, effaceable, saveable, rowKey } = this.props;
+    this.columns = [
+      ...columns.map(column => ({ ...defaultColumnProps, ...column }))
+    ];
+    if (draggable) this.columns.unshift(draggableColumn);
+    if (effaceable)
+      this.columns.push({
+        title: "Delete",
+        dataIndex: "effaceable",
+        systemProp: true,
+        render: (text, record) =>
+          this.state.dataSource.length >= 1 ? (
+            <Popconfirm
+              title="Sure to delete?"
+              onConfirm={() => this.handleDelete(record[rowKey])}
+            >
+              <Anchor>Delete</Anchor>
+            </Popconfirm>
+          ) : null
+      });
+
+    if (saveable)
+      this.columns.push({
+        title: "Save",
+        dataIndex: "saveable",
+        render: (text, record) => {
+          const { editingKey } = this.state;
+          const editable = this.isEditing(record);
+          return (
+            <Block>
+              {editable ? (
+                <Span>
+                  <EditableContext.Consumer>
+                    {form => (
+                      <Anchor
+                        onClick={() => this.handleSaveRow(form, record[rowKey])}
+                        style={{ marginRight: 8 }}
+                      >
+                        Save
+                      </Anchor>
+                    )}
+                  </EditableContext.Consumer>
+                  <Popconfirm
+                    title="Sure to cancel?"
+                    onConfirm={() => this.cancel(record[rowKey])}
+                  >
+                    <Anchor>Cancel</Anchor>
+                  </Popconfirm>
+                </Span>
+              ) : (
+                <Anchor
+                  disabled={editingKey !== ""}
+                  onClick={() => this.edit(record[rowKey])}
+                >
+                  Edit
+                </Anchor>
+              )}
+            </Block>
+          );
+        }
+      });
     return this.columns.map(col => {
       const column = { ...col };
       if (!column.render && (column.formatters || column.renderer)) {
@@ -585,6 +625,7 @@ class Datatable extends PureComponent {
       ...otherProps
     } = this.props;
     const hasData = dataSource && dataSource.length > 0;
+    const columns = this.getColumns();
     const editable = this.columns.findIndex(column => column.editable) !== -1;
     const components = {
       body: {
@@ -597,7 +638,6 @@ class Datatable extends PureComponent {
         cell: EditableCell
       }
     };
-    const columns = this.getColumns();
     const loadingValue = isDefined(isLoading) ? isLoading : loading;
     return (
       <Block>
@@ -666,7 +706,8 @@ Datatable.propTypes = {
   onRowClick: PropTypes.func,
   remote: PropTypes.bool,
   draggable: PropTypes.bool,
-  onDrag: PropTypes.func
+  onDrag: PropTypes.func,
+  onGetResponse: PropTypes.func
 };
 
 export default Datatable;

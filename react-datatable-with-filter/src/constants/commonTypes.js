@@ -9,6 +9,11 @@ export const httpMethods = {
   DELETE: "DELETE"
 };
 
+export const responseTypes = {
+  success: "success",
+  fail: "fail"
+};
+
 export const languages = {
   tr: "tr",
   en: "en"

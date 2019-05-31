@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
-    "antd": "^3.18.1",
+    "antd": "^3.19.1",
     "axios": "^0.18.0",
     "immutability-helper": "^3.0.0",
     "moment": "^2.24.0",
@@ -13,7 +13,7 @@
     "react-dnd-html5-backend": "^7.4.4",
     "react-dom": "^16.8.6",
     "react-scripts": "3.0.1",
-    "styled-components": "^4.2.0",
+    "styled-components": "^4.2.1",
     "styled-theme": "^0.3.3"
   },
   "scripts": {

@@ -38,7 +38,6 @@ class BodyRow extends React.Component {
         className += " drop-over-upward";
       }
     }
-
     return connectDragSource(
       connectDropTarget(
         <tr {...restProps} className={className} style={style} />

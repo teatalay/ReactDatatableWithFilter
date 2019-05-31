@@ -1,4 +1,5 @@
 import moment from "moment";
+
 import { defaultDateFormat } from "../../constants";
 
 export default function(formatters, cellData, rowData) {

@@ -1,5 +1,6 @@
 import React from "react";
 import { Icon } from "antd";
+import { getRandom } from "../../utils";
 
 export const defaultHorizontalScroll = 1500;
 export const defaultVerticalScroll = 400;
@@ -20,6 +21,7 @@ export const locale = {
   emptyText: "Aradığınız kriterlere uygun veri bulunamadı."
 };
 export const draggableColumn = {
+  key: "drag-".concat(getRandom()),
   width: "10px",
   title: "",
   render: () => <Icon type="menu" />

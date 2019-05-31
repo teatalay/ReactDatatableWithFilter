@@ -95,14 +95,13 @@ class Filter extends Component {
           : !!input.active;
       return {
         ...input,
-        key: input.key,
         inputType: inputTypes.checkbox.alias,
         key: input.key.toString(),
         active,
+        noLabel: true,
         name: input.name,
         fieldProps: {
           defaultChecked: active
-          // text: input.label || (input.fieldProps ? input.fieldProps.text : null)
         }
       };
     });
@@ -237,20 +236,26 @@ class Filter extends Component {
     return result;
   }
 
-  inputFilterValueMapper = (values, filterInputs) => {
+  inputFilterValueMapper = values => {
     if (!values) return values;
     let result = {};
     Object.keys(values).forEach(key => {
       let value = null;
       if (
         !isDefined(values[key]) ||
-        (values[key] instanceof Array && !values[key].length)
+        (Array.isArray(values[key]) && !values[key].length)
       )
         return value;
-      if (values[key] instanceof Array)
-        value = values[key].map(item => item.key);
-      else if (values[key].key) value = values[key].key;
-      else value = values[key];
+      if (Array.isArray(values[key])) value = values[key].map(item => item.key);
+      else if (isDefined(values[key].key)) {
+        if (typeof values[key].key === "object") {
+          const keys = Object.keys(values[key].key);
+          keys.forEach(subKey => {
+            result = { ...result, [subKey]: values[key].key[subKey] };
+          });
+          return result;
+        } else value = values[key].key;
+      } else value = values[key];
       result = { ...result, [key]: value };
     });
     return result;
@@ -522,7 +527,7 @@ class Filter extends Component {
         className={`ant-col-md-24 filter-wrapper`}
       >
         <DynamicForm
-          onSubmit={this.props.onSubmit}
+          onSubmit={this.onChangeInputFilters}
           onChange={this.onChangeInputFilters}
           inputs={filterInputs}
           labelAlign={labelAligns.left}
@@ -632,6 +637,7 @@ class Filter extends Component {
             inputs={filterFields}
             hasSubmitButton={false}
             layoutType={formLayoutTypes.inline}
+            labelAlign={labelAligns.left}
           />
         </Modal>
       </React.Fragment>
@@ -674,7 +680,8 @@ Filter.propTypes = {
   className: PropTypes.string,
   filterViaFile: PropTypes.bool,
   urlMethod: PropTypes.string,
-  filterInputs: PropTypes.array
+  filterInputs: PropTypes.array,
+  onChangeActiveFilters: PropTypes.func
 };
 
 export default Filter;
